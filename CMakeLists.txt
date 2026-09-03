@@ -35,6 +35,15 @@ target_include_directories(probeme_common PUBLIC
 )
 
 # ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+enable_testing()
+
+add_executable(test_abi_layout tests/abi/layout.c)
+target_include_directories(test_abi_layout PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_test(NAME abi_layout COMMAND test_abi_layout)
+
+# ---------------------------------------------------------------------------
 # Install
 # ---------------------------------------------------------------------------
 include(GNUInstallDirs)
