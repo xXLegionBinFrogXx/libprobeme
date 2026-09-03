@@ -2,7 +2,6 @@
 
 #include <dirent.h>
 #include <fcntl.h>
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -27,6 +26,40 @@ static int read_small_file(const char *path, char *buf, size_t cap)
     return 0;
 }
 
+/* "<root>/<zone>[/<leaf>]" without stdio; -1 on truncation. */
+static int thermal_path(char *dst, size_t cap, const char *zone,
+                        const char *leaf)
+{
+    size_t o = 0;
+    size_t n = strlen(THERMAL_ROOT);
+
+    if (o + n + 1u >= cap) {
+        return -1;
+    }
+    memcpy(dst, THERMAL_ROOT, n);
+    o += n;
+    dst[o++] = '/';
+
+    n = strlen(zone);
+    if (o + n + 1u >= cap) {
+        return -1;
+    }
+    memcpy(dst + o, zone, n);
+    o += n;
+
+    if (leaf != NULL) {
+        n = strlen(leaf);
+        if (o + n + 1u >= cap) {
+            return -1;
+        }
+        dst[o++] = '/';
+        memcpy(dst + o, leaf, n);
+        o += n;
+    }
+    dst[o] = '\0';
+    return 0;
+}
+
 int pme_collect_thermal_section(struct pme_thermal *out)
 {
     DIR *d = opendir(THERMAL_ROOT);
@@ -47,8 +80,7 @@ int pme_collect_thermal_section(struct pme_thermal *out)
             continue;
         }
 
-        if (snprintf(path, sizeof(path), "%s/%s/type", THERMAL_ROOT,
-                     e->d_name) >= (int)sizeof(path)) {
+        if (thermal_path(path, sizeof(path), e->d_name, "type") != 0) {
             continue;
         }
         if (read_small_file(path, content, sizeof(content)) != 0) {
@@ -64,8 +96,7 @@ int pme_collect_thermal_section(struct pme_thermal *out)
         }
         memcpy(type_buf, content, len + 1u);
 
-        if (snprintf(path, sizeof(path), "%s/%s/temp", THERMAL_ROOT,
-                     e->d_name) >= (int)sizeof(path)) {
+        if (thermal_path(path, sizeof(path), e->d_name, "temp") != 0) {
             continue;
         }
         if (read_small_file(path, content, sizeof(content)) != 0) {

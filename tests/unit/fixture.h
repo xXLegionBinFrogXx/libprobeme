@@ -54,8 +54,9 @@ static int pmetest_load_file(const char *path, char **out, size_t *len)
     return 0;
 }
 
-/* Invoke cb(path, buf, len, ud) for every committed fixture dir that
- * contains <relpath> (e.g. "proc/stat"). Returns how many matched. */
+/* Invoke cb(path, buf, len, ud) for every committed fixture file
+ * <relpath> (e.g. "proc/stat") found under
+ * PME_FIXTURE_DIR/<arch>/<kernel>/. Returns how many matched. */
 static int pmetest_for_each_fixture(
     const char *relpath,
     void (*cb)(const char *path, const char *buf, size_t len, void *ud),
@@ -69,26 +70,44 @@ static int pmetest_for_each_fixture(
         return 0;
     }
     while ((e = readdir(d)) != NULL) {
-        char path[4096];
-        struct stat st;
-        char *buf = NULL;
-        size_t len = 0;
+        char arch_dir[1024];
+        DIR *sd;
+        struct dirent *e2;
 
         if (e->d_name[0] == '.') {
             continue;
         }
-        if (snprintf(path, sizeof(path), "%s/%s/%s", PME_FIXTURE_DIR,
-                     e->d_name, relpath) >= (int)sizeof(path)) {
+        if (snprintf(arch_dir, sizeof(arch_dir), "%s/%s", PME_FIXTURE_DIR,
+                     e->d_name) >= (int)sizeof(arch_dir)) {
             continue;
         }
-        if (stat(path, &st) != 0 || !S_ISREG(st.st_mode)) {
+        sd = opendir(arch_dir);
+        if (sd == NULL) {
             continue;
         }
-        if (pmetest_load_file(path, &buf, &len) == 0) {
-            cb(path, buf, len, ud);
-            free(buf);
-            found++;
+        while ((e2 = readdir(sd)) != NULL) {
+            char path[4096];
+            struct stat st;
+            char *buf = NULL;
+            size_t len = 0;
+
+            if (e2->d_name[0] == '.') {
+                continue;
+            }
+            if (snprintf(path, sizeof(path), "%s/%s/%s", arch_dir,
+                         e2->d_name, relpath) >= (int)sizeof(path)) {
+                continue;
+            }
+            if (stat(path, &st) != 0 || !S_ISREG(st.st_mode)) {
+                continue;
+            }
+            if (pmetest_load_file(path, &buf, &len) == 0) {
+                cb(path, buf, len, ud);
+                free(buf);
+                found++;
+            }
         }
+        closedir(sd);
     }
     closedir(d);
     return found;

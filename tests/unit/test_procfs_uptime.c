@@ -40,7 +40,8 @@ int main(void)
         PME_TEST_CHECK(pme_parse_uptime("", 0, &u) == PME_EIO, "empty");
     }
 
-    pmetest_for_each_fixture("proc/uptime", check_fixture, NULL);
+    PME_TEST_CHECK(pmetest_for_each_fixture("proc/uptime", check_fixture, NULL) >= 1,
+                   "no fixtures exercised - capture.sh output missing?");
     printf("ok %s\n", __FILE__);
     return 0;
 }

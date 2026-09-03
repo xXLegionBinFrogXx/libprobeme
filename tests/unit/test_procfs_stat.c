@@ -59,7 +59,8 @@ int main(void)
         PME_TEST_CHECK(pme_parse_proc_stat("", 0, &c) == PME_EIO, "empty");
     }
 
-    pmetest_for_each_fixture("proc/stat", check_fixture, NULL);
+    PME_TEST_CHECK(pmetest_for_each_fixture("proc/stat", check_fixture, NULL) >= 1,
+                   "no fixtures exercised - capture.sh output missing?");
     printf("ok %s\n", __FILE__);
     return 0;
 }
