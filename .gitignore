@@ -1,7 +1,12 @@
 build/
+package/
 *.o
 *.so
 *.so.*
 *.dylib
 *.a
+*.tar.gz
 probeme.pc
+.DS_Store
+*.swp
+compile_commands.json
