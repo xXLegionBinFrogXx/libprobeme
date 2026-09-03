@@ -63,6 +63,10 @@ if(PME_IS_LINUX AND "linux" IN_LIST PME_PROVIDERS)
     add_executable(dump examples/dump.c)
     target_include_directories(dump PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
     target_link_libraries(dump PRIVATE ${CMAKE_DL_LIBS})
+
+    add_executable(monitor examples/monitor.c)
+    target_include_directories(monitor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_link_libraries(monitor PRIVATE ${CMAKE_DL_LIBS})
 endif()
 
 # ---------------------------------------------------------------------------

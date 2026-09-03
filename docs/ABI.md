@@ -29,7 +29,10 @@ Everything else is hidden (`-fvisibility=hidden`).
 ## Snapshot protocol
 
 1. Caller allocates `struct pme_snapshot` once (~56 KB; static or heap),
-   sets `size = sizeof(struct pme_snapshot)`.
+   zeroes it, sets `size = sizeof(struct pme_snapshot)`. Before each refresh
+   cycle the caller resets `valid`/`truncated` to 0 - providers only OR in
+   their own bits, so multiple providers can fill one snapshot in any order
+   without disturbing each other.
 2. Optional: compare `provider->abi_version` major with the header's before
    proceeding.
 3. `provider->init(&config)` — `config.size = sizeof(struct pme_config)`.

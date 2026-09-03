@@ -243,9 +243,10 @@ struct pme_gpu {
 /* Snapshot                                                            */
 /* ------------------------------------------------------------------ */
 
-/* Caller allocates once (static or heap, ~56 KB), sets size =
- * sizeof(struct pme_snapshot), passes to collect_all(). The library fills
- * only sections listed in provider capabilities; on success it sets those
+/* Caller allocates once (static or heap, ~56 KB), zeroes it, sets size =
+ * sizeof(struct pme_snapshot), passes to collect_all(). Before each refresh
+ * cycle the caller resets valid/truncated to 0. The library fills only
+ * sections listed in provider capabilities; on success it sets those
  * sections' bits in `valid` and never writes other sections, so two
  * providers (e.g. linux + nvml) can fill one snapshot in any order.
  *
