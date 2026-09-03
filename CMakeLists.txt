@@ -44,6 +44,36 @@ target_include_directories(test_abi_layout PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/i
 add_test(NAME abi_layout COMMAND test_abi_layout)
 
 # ---------------------------------------------------------------------------
+# Unit tests (pure /proc parsers; run on any host, no fixtures required --
+# committed fixture dirs under tests/fixtures/linux are picked up if present)
+# ---------------------------------------------------------------------------
+if("linux" IN_LIST PME_PROVIDERS)
+    set(PME_UNIT_TESTS
+        test_procfs_stat
+        test_procfs_meminfo
+        test_procfs_loadavg
+        test_procfs_uptime
+        test_procfs_diskstats
+        test_procfs_net_dev
+        test_procfs_mounts
+    )
+    foreach(t ${PME_UNIT_TESTS})
+        add_executable(${t} tests/unit/${t}.c src/linux/procfs.c)
+        target_include_directories(${t} PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/src
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/linux
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit
+        )
+        target_compile_definitions(${t} PRIVATE
+            PME_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/linux"
+        )
+        add_test(NAME ${t} COMMAND ${t})
+        set_tests_properties(${t} PROPERTIES SKIP_RETURN_CODE 77)
+    endforeach()
+endif()
+
+# ---------------------------------------------------------------------------
 # Install
 # ---------------------------------------------------------------------------
 include(GNUInstallDirs)
