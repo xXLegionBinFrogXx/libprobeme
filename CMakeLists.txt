@@ -34,6 +34,37 @@ target_include_directories(probeme_common PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
+set(PME_LIB_TARGETS "")
+
+# ---------------------------------------------------------------------------
+# linux provider (requires Linux: procfs/sysfs/statvfs)
+# ---------------------------------------------------------------------------
+if(PME_IS_LINUX AND "linux" IN_LIST PME_PROVIDERS)
+    add_library(probeme_linux SHARED
+        src/linux/provider_linux.c
+        src/linux/procfs.c
+        src/linux/cpu.c
+        src/linux/memory.c
+        src/linux/loadavg.c
+        src/linux/uptime.c
+        src/linux/disk_io.c
+        src/linux/netdev.c
+        src/linux/filesystem.c
+        src/linux/thermal.c
+    )
+    target_link_libraries(probeme_linux PRIVATE probeme_common)
+    set_target_properties(probeme_linux PROPERTIES
+        OUTPUT_NAME probeme_linux
+        VERSION ${PROJECT_VERSION}
+        SOVERSION 1
+    )
+    list(APPEND PME_LIB_TARGETS probeme_linux)
+
+    add_executable(dump examples/dump.c)
+    target_include_directories(dump PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_link_libraries(dump PRIVATE ${CMAKE_DL_LIBS})
+endif()
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
@@ -74,9 +105,27 @@ if("linux" IN_LIST PME_PROVIDERS)
 endif()
 
 # ---------------------------------------------------------------------------
+# Live tests: dlopen the built provider(s); Linux only, skip (77) when the
+# provider cannot be loaded (e.g. no GPU for live_nvml)
+# ---------------------------------------------------------------------------
+if(PME_IS_LINUX)
+    add_executable(live_linux tests/live/live_linux.c)
+    target_compile_definitions(live_linux PRIVATE
+        PME_BUILD_LIB_DIR="${CMAKE_CURRENT_BINARY_DIR}"
+    )
+    target_include_directories(live_linux PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_link_libraries(live_linux PRIVATE ${CMAKE_DL_LIBS})
+    add_test(NAME live_linux COMMAND live_linux)
+    set_tests_properties(live_linux PROPERTIES SKIP_RETURN_CODE 77)
+endif()
+
+# ---------------------------------------------------------------------------
 # Install
 # ---------------------------------------------------------------------------
 include(GNUInstallDirs)
+install(TARGETS ${PME_LIB_TARGETS}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
 install(FILES include/probeme.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 configure_file(cmake/probeme.pc.in ${CMAKE_CURRENT_BINARY_DIR}/probeme.pc @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/probeme.pc
