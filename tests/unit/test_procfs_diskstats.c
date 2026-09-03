@@ -30,7 +30,7 @@ static void check_disk(const struct pme_disk *d, uint64_t reads, uint64_t rb,
 
 int main(void)
 {
-    /* 14-column kernel */
+
     {
         static const char t[] =
             "   8       0 sda 100 0 2000 40 50 0 1000 30 0 70 70\n"
@@ -43,7 +43,7 @@ int main(void)
         PME_TEST_CHECK(strcmp(io.disks[0].name, "sda") == 0, "name0");
         PME_TEST_CHECK(strcmp(io.disks[1].name, "sda1") == 0, "name1");
     }
-    /* 20-column kernel (discard + flush fields) */
+
     {
         static const char t[] =
             "   8       0 nvme0n1 100 0 2000 40 50 0 1000 30 0 70 70 0 0 0 0 0 0\n";
@@ -55,19 +55,19 @@ int main(void)
         PME_TEST_CHECK(io.disks[0].io_in_progress == 0u && io.disks[0].io_time_ms == 70u,
                        "20col io");
     }
-    /* malformed: too few counter fields -> line skipped */
+
     {
         static const char t[] = "   8       0 sda 1 2 3\n";
         struct pme_disk_io io;
         PME_TEST_CHECK(pme_parse_diskstats(t, sizeof(t) - 1u, &io) == PME_EIO, "short");
     }
-    /* malformed: garbage name-only line */
+
     {
         static const char t[] = "garbage\n";
         struct pme_disk_io io;
         PME_TEST_CHECK(pme_parse_diskstats(t, sizeof(t) - 1u, &io) == PME_EIO, "garbage");
     }
-    /* empty */
+
     {
         struct pme_disk_io io;
         PME_TEST_CHECK(pme_parse_diskstats("", 0, &io) == PME_EIO, "empty");

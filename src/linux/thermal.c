@@ -26,7 +26,6 @@ static int read_small_file(const char *path, char *buf, size_t cap)
     return 0;
 }
 
-/* "<root>/<zone>[/<leaf>]" without stdio; -1 on truncation. */
 static int thermal_path(char *dst, size_t cap, const char *zone,
                         const char *leaf)
 {

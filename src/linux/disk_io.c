@@ -6,10 +6,7 @@
 #include "procfs.h"
 #include "readfd.h"
 
-/* Keep only entries that are whole block devices (present in /sys/block);
- * this removes partitions (nvme0n1p1, sda1, ...) reported by
- * /proc/diskstats. Loop devices and device-mapper are real block devices
- * and stay. */
+/* /sys/block lists whole disks; anything else in diskstats is a partition. */
 static int keep_only_block_devices(struct pme_disk_io *io)
 {
     static const char sys_block[] = "/sys/block";
@@ -22,7 +19,7 @@ static int keep_only_block_devices(struct pme_disk_io *io)
 
     d = opendir(sys_block);
     if (d == NULL) {
-        return -1; /* no /sys/block: keep everything rather than nothing */
+        return -1;
     }
     while ((e = readdir(d)) != NULL && nnames < 256u) {
         size_t n = strlen(e->d_name);

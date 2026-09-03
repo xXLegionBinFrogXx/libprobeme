@@ -1,12 +1,9 @@
-/* ABI layout lock for probeme.h.
- *
- * Every field offset and struct size is pinned. If this file fails to
- * compile, the header changed incompatibly - bump PME_ABI_MINOR for
- * append-only changes and update the numbers here deliberately.
- *
- * Verified on: x86_64 (gcc, clang), aarch64 (gcc, clang). All snapshot
- * structs are pointer-free, so LP64 layout is identical everywhere. */
+
 #include "probeme.h"
+
+/* Layout lock: if any assert here breaks, the header changed incompatibly.
+ * Snapshot structs are pointer-free, so LP64 layout is identical on
+ * x86_64 and aarch64, gcc and clang. */
 
 #include <stddef.h>
 
@@ -14,7 +11,6 @@
 #define SZ(t) _Static_assert(sizeof(struct t) == SZ_##t, #t);
 #define OFF(t, f) _Static_assert(offsetof(struct t, f) == OFF_##t##_##f, #t);
 
-/* pme_cpu_core: 8 x uint64_t */
 #define SZ_pme_cpu_core 64
 #define OFF_pme_cpu_core_user 0
 #define OFF_pme_cpu_core_nice 8
@@ -34,7 +30,6 @@ OFF(pme_cpu_core, irq)
 OFF(pme_cpu_core, softirq)
 OFF(pme_cpu_core, steal)
 
-/* pme_cpu */
 #define SZ_pme_cpu 16400
 #define OFF_pme_cpu_n 0
 #define OFF_pme_cpu_pad 4
@@ -47,7 +42,6 @@ OFF(pme_cpu, read_at_ns)
 OFF(pme_cpu, cpu)
 CHECK(sizeof(struct pme_cpu) == 16 + 256 * sizeof(struct pme_cpu_core));
 
-/* pme_memory: 8 x uint64_t */
 #define SZ_pme_memory 64
 #define OFF_pme_memory_read_at_ns 0
 #define OFF_pme_memory_total 8
@@ -67,7 +61,6 @@ OFF(pme_memory, cached)
 OFF(pme_memory, swap_total)
 OFF(pme_memory, swap_free)
 
-/* pme_loadavg */
 #define SZ_pme_loadavg 40
 #define OFF_pme_loadavg_read_at_ns 0
 #define OFF_pme_loadavg_load1 8
@@ -83,7 +76,6 @@ OFF(pme_loadavg, load15)
 OFF(pme_loadavg, running)
 OFF(pme_loadavg, total)
 
-/* pme_uptime: 3 x uint64_t */
 #define SZ_pme_uptime 24
 #define OFF_pme_uptime_read_at_ns 0
 #define OFF_pme_uptime_uptime_s 8
@@ -93,7 +85,6 @@ OFF(pme_uptime, read_at_ns)
 OFF(pme_uptime, uptime_s)
 OFF(pme_uptime, boot_time_unix_s)
 
-/* pme_disk */
 #define SZ_pme_disk 96
 #define OFF_pme_disk_name 0
 #define OFF_pme_disk_reads 32
@@ -115,7 +106,6 @@ OFF(pme_disk, write_time_ms)
 OFF(pme_disk, io_in_progress)
 OFF(pme_disk, io_time_ms)
 
-/* pme_disk_io */
 #define SZ_pme_disk_io 6160
 #define OFF_pme_disk_io_n 0
 #define OFF_pme_disk_io_pad 4
@@ -128,7 +118,6 @@ OFF(pme_disk_io, read_at_ns)
 OFF(pme_disk_io, disks)
 CHECK(sizeof(struct pme_disk_io) == 16 + 64 * sizeof(struct pme_disk));
 
-/* pme_mount */
 #define SZ_pme_mount 400
 #define OFF_pme_mount_device 0
 #define OFF_pme_mount_mountpoint 64
@@ -152,7 +141,6 @@ OFF(pme_mount, avail_bytes)
 OFF(pme_mount, files)
 OFF(pme_mount, files_free)
 
-/* pme_filesystem */
 #define SZ_pme_filesystem 25616
 #define OFF_pme_filesystem_n 0
 #define OFF_pme_filesystem_pad 4
@@ -165,7 +153,6 @@ OFF(pme_filesystem, read_at_ns)
 OFF(pme_filesystem, mounts)
 CHECK(sizeof(struct pme_filesystem) == 16 + 64 * sizeof(struct pme_mount));
 
-/* pme_iface */
 #define SZ_pme_iface 80
 #define OFF_pme_iface_name 0
 #define OFF_pme_iface_rx_bytes 16
@@ -187,7 +174,6 @@ OFF(pme_iface, tx_packets)
 OFF(pme_iface, tx_errs)
 OFF(pme_iface, tx_drop)
 
-/* pme_netdev */
 #define SZ_pme_netdev 5136
 #define OFF_pme_netdev_n 0
 #define OFF_pme_netdev_pad 4
@@ -200,7 +186,6 @@ OFF(pme_netdev, read_at_ns)
 OFF(pme_netdev, ifaces)
 CHECK(sizeof(struct pme_netdev) == 16 + 64 * sizeof(struct pme_iface));
 
-/* pme_zone */
 #define SZ_pme_zone 40
 #define OFF_pme_zone_type 0
 #define OFF_pme_zone_temp_mc 32
@@ -208,7 +193,6 @@ SZ(pme_zone)
 OFF(pme_zone, type)
 OFF(pme_zone, temp_mc)
 
-/* pme_thermal */
 #define SZ_pme_thermal 1296
 #define OFF_pme_thermal_n 0
 #define OFF_pme_thermal_pad 4
@@ -221,7 +205,6 @@ OFF(pme_thermal, read_at_ns)
 OFF(pme_thermal, zones)
 CHECK(sizeof(struct pme_thermal) == 16 + 32 * sizeof(struct pme_zone));
 
-/* pme_gpu_dev */
 #define SZ_pme_gpu_dev 136
 #define OFF_pme_gpu_dev_uuid 0
 #define OFF_pme_gpu_dev_name 48
@@ -241,7 +224,6 @@ OFF(pme_gpu_dev, util_pct)
 OFF(pme_gpu_dev, pstate)
 OFF(pme_gpu_dev, pad)
 
-/* pme_gpu */
 #define SZ_pme_gpu 1104
 #define OFF_pme_gpu_n 0
 #define OFF_pme_gpu_pad 4
@@ -254,7 +236,6 @@ OFF(pme_gpu, read_at_ns)
 OFF(pme_gpu, gpus)
 CHECK(sizeof(struct pme_gpu) == 16 + 8 * sizeof(struct pme_gpu_dev));
 
-/* pme_snapshot */
 #define SZ_pme_snapshot 55864
 #define OFF_pme_snapshot_size 0
 #define OFF_pme_snapshot_abi_version 4
@@ -284,7 +265,6 @@ OFF(pme_snapshot, netdev)
 OFF(pme_snapshot, thermal)
 OFF(pme_snapshot, gpu)
 
-/* pme_provider: LP64 only (contains pointers). */
 CHECK(sizeof(struct pme_provider) == 48);
 CHECK(offsetof(struct pme_provider, name) == 8);
 CHECK(offsetof(struct pme_provider, capabilities) == 16);

@@ -1,19 +1,13 @@
-/* monitor - example probeme consumer: refresh a screen of system stats
- * every N seconds (default 5).
- *
- * Usage: monitor [interval_s] [provider.so ...]
- * Default providers: libprobeme_linux.so.1 libprobeme_nvml.so.1 (nvml is
- * optional; it is skipped when it cannot be loaded).
- *
- * The library hands out raw monotonic counters only - deltas/rates shown
- * here are computed by the consumer between frames, which is exactly the
- * pattern the exporter/TUI use. */
+
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+
+/* monitor [interval_s] [provider.so ...] - refresh system stats every
+ * interval (default 5). Rates are computed here from the raw counters. */
 
 #include "probeme.h"
 
@@ -150,7 +144,7 @@ static void frame(const struct pme_snapshot *now, const struct pme_snapshot *pre
             rb = (double)(d->read_bytes - pd->read_bytes) / dt;
             wb = (double)(d->write_bytes - pd->write_bytes) / dt;
             if (rb + wb < 1024.0) {
-                continue; /* idle disks stay off the screen */
+                continue;
             }
             human(b1, sizeof(b1), rb);
             human(b2, sizeof(b2), wb);

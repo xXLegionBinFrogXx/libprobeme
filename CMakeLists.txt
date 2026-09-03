@@ -15,6 +15,7 @@ add_compile_definitions(_GNU_SOURCE)
 include(cmake/warnings.cmake)
 
 # Providers to build: subset of "linux;nvml".
+# Providers to build: subset of "linux;nvml".
 set(PME_PROVIDERS "linux;nvml" CACHE STRING "Provider backends to build (linux;nvml)")
 
 set(PME_IS_LINUX OFF)
@@ -74,6 +75,8 @@ endif()
 # present at build time the .so builds with undefined symbols and fails only
 # at dlopen time on machines without the driver)
 # ---------------------------------------------------------------------------
+# Without libnvidia-ml at build time the .so keeps undefined symbols and
+# resolves them at dlopen; it only fails to load on machines without the driver.
 if(PME_IS_LINUX AND "nvml" IN_LIST PME_PROVIDERS)
     add_library(probeme_nvml SHARED
         src/nvml/provider_nvml.c

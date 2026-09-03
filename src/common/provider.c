@@ -19,9 +19,8 @@ int pme_snapshot_prepare(struct pme_snapshot *sn)
     if (sn == NULL || sn->size < (uint32_t)sizeof(struct pme_snapshot)) {
         return PME_EINVAL;
     }
-    /* valid/truncated belong to the caller: providers only OR their own
-     * bits in, so two providers can fill one snapshot in any order. The
-     * caller zeroes them before the first collect of a refresh cycle. */
+
+    /* valid/truncated belong to the caller; providers only OR bits in. */
     sn->abi_version = pme_abi_version();
     return PME_OK;
 }

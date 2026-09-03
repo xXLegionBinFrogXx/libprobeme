@@ -1,17 +1,11 @@
-/* dump - load probeme provider .so(s), fill one snapshot, print it.
- *
- * Usage: dump [provider.so ...]
- * Default: libprobeme_linux.so.1 libprobeme_nvml.so.1
- *
- * Demonstrates the full consumer contract: dlopen, dlsym the two exported
- * symbols, abi check, init/collect_all/destroy. Multiple providers fill
- * one snapshot sequentially - each only writes its capability sections.
- * stdio is fine here; this is exactly the starting point for the C++/Qt
- * frontends. */
+
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* dump [provider.so ...] - load probeme providers, fill one snapshot,
+ * print it. Default: libprobeme_linux.so.1 libprobeme_nvml.so.1 */
 
 #include "probeme.h"
 

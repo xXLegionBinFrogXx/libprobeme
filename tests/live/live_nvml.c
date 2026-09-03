@@ -1,9 +1,10 @@
-/* live_nvml - load the built nvml provider and assert sane GPU ranges.
- * Skips (exit 77) when the .so cannot be loaded or NVML is not usable. */
+
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* live_nvml: GPU range asserts; exit 77 (ctest skip) on non-NVIDIA hosts. */
 
 #include "probeme.h"
 

@@ -2,14 +2,11 @@
 #include <string.h>
 #include <unistd.h>
 
+/* Proc files are opened once in init() and re-read per collect_all(). */
+
 #include "common/clock.h"
 #include "common/provider_impl.h"
 #include "sections.h"
-
-/*
- * linux provider: pread-able /proc files opened once in init, re-read per
- * collect_all. One fd table, one translation unit, no other globals.
- */
 
 enum {
     FD_STAT,

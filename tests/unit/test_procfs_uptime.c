@@ -16,7 +16,7 @@ static void check_fixture(const char *path, const char *buf, size_t len, void *u
 
 int main(void)
 {
-    /* valid: fractional seconds truncate */
+
     {
         static const char t[] = "12345.67 8901.23\n";
         struct pme_uptime u;
@@ -25,7 +25,7 @@ int main(void)
         PME_TEST_CHECK(u.uptime_s == 12345u, "uptime=%llu",
                        (unsigned long long)u.uptime_s);
     }
-    /* second field absent */
+
     {
         static const char t[] = "42\n";
         struct pme_uptime u;
@@ -33,7 +33,7 @@ int main(void)
         PME_TEST_CHECK(pme_parse_uptime(t, sizeof(t) - 1u, &u) == PME_OK, "int");
         PME_TEST_CHECK(u.uptime_s == 42u, "int val");
     }
-    /* malformed */
+
     {
         struct pme_uptime u;
         PME_TEST_CHECK(pme_parse_uptime("abc def\n", 8, &u) == PME_EIO, "garbage");

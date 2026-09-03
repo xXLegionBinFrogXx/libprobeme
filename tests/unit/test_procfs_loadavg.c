@@ -25,7 +25,7 @@ static int feq(double a, double b)
 
 int main(void)
 {
-    /* valid */
+
     {
         static const char t[] = "0.52 0.58 0.59 1/444 12345\n";
         struct pme_loadavg l;
@@ -36,7 +36,7 @@ int main(void)
         PME_TEST_CHECK(l.running == 1u && l.total == 444u, "run=%u tot=%u",
                        l.running, l.total);
     }
-    /* no newline, pid missing */
+
     {
         static const char t[] = "0.00 0.01 0.02 0/1";
         struct pme_loadavg l;
@@ -44,17 +44,17 @@ int main(void)
         PME_TEST_CHECK(pme_parse_loadavg(t, sizeof(t) - 1u, &l) == PME_OK, "trunc");
         PME_TEST_CHECK(l.running == 0u && l.total == 1u, "trunc vals");
     }
-    /* malformed: only two loads */
+
     {
         struct pme_loadavg l;
         PME_TEST_CHECK(pme_parse_loadavg("0.1 0.2\n", 7, &l) == PME_EIO, "short");
     }
-    /* malformed: garbage */
+
     {
         struct pme_loadavg l;
         PME_TEST_CHECK(pme_parse_loadavg("a b c d/e f\n", 12, &l) == PME_EIO, "garbage");
     }
-    /* malformed: missing run/total */
+
     {
         struct pme_loadavg l;
         PME_TEST_CHECK(pme_parse_loadavg("0.1 0.2 0.3\n", 12, &l) == PME_EIO, "no frac");

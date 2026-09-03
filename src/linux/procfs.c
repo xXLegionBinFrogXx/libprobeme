@@ -2,10 +2,6 @@
 
 #include <string.h>
 
-/* ------------------------------------------------------------------ */
-/* Token scanners                                                      */
-/* ------------------------------------------------------------------ */
-
 static const char *skip_spaces(const char *p, const char *end)
 {
     while (p < end && (*p == ' ' || *p == '\t')) {
@@ -23,7 +19,7 @@ int pme_parse_u64(const char **pp, const char *end, uint64_t *out)
     while (p < end && *p >= '0' && *p <= '9') {
         uint64_t d = (uint64_t)(*p - '0');
         if (v > (UINT64_MAX - d) / 10u) {
-            return -1; /* overflow */
+            return -1;
         }
         v = v * 10u + d;
         any = 1;
@@ -65,7 +61,6 @@ int pme_parse_i64(const char **pp, const char *end, int64_t *out)
     return 0;
 }
 
-/* Kernel fixed-point / plain decimal double: [-]digits[.digits] */
 static int parse_double(const char **pp, const char *end, double *out)
 {
     const char *p = *pp;
@@ -109,7 +104,6 @@ static int parse_double(const char **pp, const char *end, double *out)
     return 0;
 }
 
-/* Match a literal key (including its ':') at *pp. */
 static int match_key(const char **pp, const char *le, const char *key)
 {
     size_t klen = strlen(key);
@@ -122,7 +116,6 @@ static int match_key(const char **pp, const char *le, const char *key)
     return 0;
 }
 
-/* Bounded, truncating copy of n bytes plus NUL. */
 static void copy_str(char *dst, size_t cap, const char *src, size_t n)
 {
     if (n >= cap) {
@@ -132,7 +125,6 @@ static void copy_str(char *dst, size_t cap, const char *src, size_t n)
     dst[n] = '\0';
 }
 
-/* Multiply by 512 (sectors -> bytes) with saturation. */
 static uint64_t sectors_to_bytes(uint64_t sectors)
 {
     if (sectors > UINT64_MAX / 512u) {
@@ -140,10 +132,6 @@ static uint64_t sectors_to_bytes(uint64_t sectors)
     }
     return sectors * 512u;
 }
-
-/* ------------------------------------------------------------------ */
-/* /proc/stat                                                          */
-/* ------------------------------------------------------------------ */
 
 int pme_parse_proc_stat(const char *buf, size_t len, struct pme_cpu *out)
 {
@@ -166,7 +154,7 @@ int pme_parse_proc_stat(const char *buf, size_t len, struct pme_cpu *out)
             (q + 3 == le || q[3] == ' ' || q[3] == '\t' ||
              (q[3] >= '0' && q[3] <= '9'))) {
             q += 3;
-            /* skip the core index of cpuN lines ("cpu12 1 2 ..." -> past 12) */
+
             while (q < le && *q >= '0' && *q <= '9') {
                 q++;
             }
@@ -178,10 +166,10 @@ int pme_parse_proc_stat(const char *buf, size_t len, struct pme_cpu *out)
                 for (i = 0; i < 8; i++) {
                     q = skip_spaces(q, le);
                     if (q >= le) {
-                        break; /* short (old kernel) line: rest stay 0 */
+                        break;
                     }
                     if (*q < '0' || *q > '9') {
-                        ok = 0; /* corrupt field */
+                        ok = 0;
                         break;
                     }
                     if (pme_parse_u64(&q, le, &v[i]) != 0) {
@@ -203,7 +191,7 @@ int pme_parse_proc_stat(const char *buf, size_t len, struct pme_cpu *out)
                 }
             }
         } else {
-            break; /* end of the cpu block */
+            break;
         }
         p = (nl != NULL) ? nl + 1 : end;
     }
@@ -214,10 +202,6 @@ int pme_parse_proc_stat(const char *buf, size_t len, struct pme_cpu *out)
     out->n = n;
     return PME_OK;
 }
-
-/* ------------------------------------------------------------------ */
-/* /proc/meminfo                                                       */
-/* ------------------------------------------------------------------ */
 
 int pme_parse_meminfo(const char *buf, size_t len, struct pme_memory *out)
 {
@@ -284,10 +268,6 @@ int pme_parse_meminfo(const char *buf, size_t len, struct pme_memory *out)
     return PME_OK;
 }
 
-/* ------------------------------------------------------------------ */
-/* /proc/loadavg                                                       */
-/* ------------------------------------------------------------------ */
-
 int pme_parse_loadavg(const char *buf, size_t len, struct pme_loadavg *out)
 {
     const char *p;
@@ -341,10 +321,6 @@ int pme_parse_loadavg(const char *buf, size_t len, struct pme_loadavg *out)
     return PME_OK;
 }
 
-/* ------------------------------------------------------------------ */
-/* /proc/uptime                                                        */
-/* ------------------------------------------------------------------ */
-
 int pme_parse_uptime(const char *buf, size_t len, struct pme_uptime *out)
 {
     const char *p;
@@ -372,10 +348,6 @@ int pme_parse_uptime(const char *buf, size_t len, struct pme_uptime *out)
     return PME_OK;
 }
 
-/* ------------------------------------------------------------------ */
-/* /proc/diskstats                                                     */
-/* ------------------------------------------------------------------ */
-
 int pme_parse_diskstats(const char *buf, size_t len, struct pme_disk_io *out)
 {
     const char *p;
@@ -398,7 +370,6 @@ int pme_parse_diskstats(const char *buf, size_t len, struct pme_disk_io *out)
         size_t name_len;
         int i;
 
-        /* major minor name <fields...> */
         if (pme_parse_u64(&q, le, &discard) != 0) {
             goto next;
         }
@@ -419,7 +390,7 @@ int pme_parse_diskstats(const char *buf, size_t len, struct pme_disk_io *out)
         for (i = 0; i < 10; i++) {
             q = skip_spaces(q, le);
             if (pme_parse_u64(&q, le, &v[i]) != 0) {
-                goto next; /* not enough fields: not a diskstats line */
+                goto next;
             }
         }
 
@@ -448,10 +419,6 @@ next:
     return PME_OK;
 }
 
-/* ------------------------------------------------------------------ */
-/* /proc/net/dev                                                       */
-/* ------------------------------------------------------------------ */
-
 int pme_parse_net_dev(const char *buf, size_t len, struct pme_netdev *out)
 {
     const char *p;
@@ -476,7 +443,7 @@ int pme_parse_net_dev(const char *buf, size_t len, struct pme_netdev *out)
         int i;
 
         if (colon == NULL) {
-            goto next; /* header line */
+            goto next;
         }
         name = skip_spaces(p, colon);
         name_end = colon;
@@ -492,7 +459,7 @@ int pme_parse_net_dev(const char *buf, size_t len, struct pme_netdev *out)
         for (i = 0; i < 12; i++) {
             q = skip_spaces(q, le);
             if (pme_parse_u64(&q, le, &f[i]) != 0) {
-                goto next; /* truncated counters: not a data line */
+                goto next;
             }
         }
 
@@ -521,10 +488,6 @@ next:
     return PME_OK;
 }
 
-/* ------------------------------------------------------------------ */
-/* /proc/self/mounts                                                   */
-/* ------------------------------------------------------------------ */
-
 static int is_remote_fstype(const char *s, size_t n)
 {
     static const char *const remote[] = {
@@ -540,15 +503,13 @@ static int is_remote_fstype(const char *s, size_t n)
             return 1;
         }
     }
-    /* prefix match catches future nfsN and cifs variants */
+
     if (n >= 3u && (memcmp(s, "nfs", 3) == 0)) {
         return 1;
     }
     return 0;
 }
 
-/* Scan the option list for an exact token. /proc/self/mounts separates
- * option groups with spaces and options within a group with commas. */
 static int has_opt(const char *p, const char *le, const char *opt)
 {
     size_t olen = strlen(opt);
@@ -590,7 +551,6 @@ int pme_parse_self_mounts(const char *buf, size_t len, struct pme_filesystem *ou
         uint32_t flags = 0;
         struct pme_mount *m;
 
-        /* device */
         dev = q;
         while (q < le && *q != ' ' && *q != '\t') {
             q++;
@@ -601,7 +561,6 @@ int pme_parse_self_mounts(const char *buf, size_t len, struct pme_filesystem *ou
         }
         q = skip_spaces(q, le);
 
-        /* mountpoint */
         mntp = q;
         while (q < le && *q != ' ' && *q != '\t') {
             q++;
@@ -612,7 +571,6 @@ int pme_parse_self_mounts(const char *buf, size_t len, struct pme_filesystem *ou
         }
         q = skip_spaces(q, le);
 
-        /* fstype */
         fst = q;
         while (q < le && *q != ' ' && *q != '\t') {
             q++;
@@ -623,7 +581,6 @@ int pme_parse_self_mounts(const char *buf, size_t len, struct pme_filesystem *ou
         }
         q = skip_spaces(q, le);
 
-        /* options: rest of the line */
         if (has_opt(q, le, "ro")) {
             flags |= PME_MOUNT_RO;
         }

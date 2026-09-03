@@ -4,8 +4,6 @@
 #include <errno.h>
 #include <unistd.h>
 
-/* Re-read an already-open procfs/sysfs fd from offset 0 into buf.
- * Returns 0 and sets *out_len, or -1. Never reads past cap. */
 static inline int pme_read_fd(int fd, char *buf, size_t cap, size_t *out_len)
 {
     size_t off = 0;
@@ -30,4 +28,4 @@ static inline int pme_read_fd(int fd, char *buf, size_t cap, size_t *out_len)
     return 0;
 }
 
-#endif /* PROBEME_LINUX_READFD_H */
+#endif

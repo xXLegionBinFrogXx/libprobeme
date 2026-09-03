@@ -1,16 +1,12 @@
 #include <string.h>
 
+/* PME_ENOTSUP here means "no usable NVIDIA driver"; without VRAM series
+ * because unified-memory parts report meaningless framebuffer numbers. */
+
 #include "nvml_state.h"
 
 #include "common/clock.h"
 #include "common/provider_impl.h"
-
-/*
- * nvml provider: NVML is initialized once (nvmlInit_v2), device handles are
- * cached, collect_all queries instantaneous values. Fails with PME_ENOTSUP
- * when the NVIDIA driver / libnvidia-ml.so.1 is not usable. No VRAM series:
- * unified-memory architectures report meaningless framebuffer numbers.
- */
 
 static struct {
     int inited;

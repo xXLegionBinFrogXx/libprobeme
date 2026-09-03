@@ -1,9 +1,11 @@
-/* live_linux - load the built linux provider and assert sane ranges.
- * Skips (exit 77) when the .so cannot be loaded. Run on real Linux hosts. */
+
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* live_linux: range asserts against the built linux provider; exit 77
+ * (ctest skip) when the .so cannot be loaded. */
 
 #include "probeme.h"
 

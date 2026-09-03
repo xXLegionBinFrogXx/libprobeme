@@ -1,5 +1,4 @@
-/* Shared test helpers: fixture loading + failure macro.
- * Tests may use malloc/stdio freely (collect path may not). */
+
 #ifndef PME_TEST_FIXTURE_H
 #define PME_TEST_FIXTURE_H
 
@@ -54,9 +53,6 @@ static int pmetest_load_file(const char *path, char **out, size_t *len)
     return 0;
 }
 
-/* Invoke cb(path, buf, len, ud) for every committed fixture file
- * <relpath> (e.g. "proc/stat") found under
- * PME_FIXTURE_DIR/<arch>/<kernel>/. Returns how many matched. */
 static int pmetest_for_each_fixture(
     const char *relpath,
     void (*cb)(const char *path, const char *buf, size_t len, void *ud),
@@ -113,4 +109,4 @@ static int pmetest_for_each_fixture(
     return found;
 }
 
-#endif /* PME_TEST_FIXTURE_H */
+#endif

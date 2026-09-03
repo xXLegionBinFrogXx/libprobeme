@@ -27,7 +27,7 @@ static void check_fixture(const char *path, const char *buf, size_t len, void *u
 
 int main(void)
 {
-    /* valid: local, remote (nfs), cifs ro */
+
     {
         static const char t[] =
             "/dev/sda1 / ext4 rw,relatime 0 0\n"
@@ -47,7 +47,7 @@ int main(void)
         PME_TEST_CHECK(fs.mounts[3].flags == (PME_MOUNT_RO | PME_MOUNT_SKIPPED),
                        "cifs ro+skipped flags=%u", fs.mounts[3].flags);
     }
-    /* 5.x kernel: nfs4 versioned string and 9p */
+
     {
         static const char t[] =
             "server:/v /mnt/v nfs4 rw 0 0\n"
@@ -59,13 +59,13 @@ int main(void)
         PME_TEST_CHECK((fs.mounts[0].flags & PME_MOUNT_SKIPPED) != 0u, "nfs4 skipped");
         PME_TEST_CHECK((fs.mounts[1].flags & PME_MOUNT_SKIPPED) != 0u, "9p skipped");
     }
-    /* malformed: only two tokens */
+
     {
         static const char t[] = "/dev/sda1 /\n";
         struct pme_filesystem fs;
         PME_TEST_CHECK(pme_parse_self_mounts(t, sizeof(t) - 1u, &fs) == PME_EIO, "short");
     }
-    /* no newline at EOF */
+
     {
         static const char t[] = "/dev/sda1 / ext4 rw";
         struct pme_filesystem fs;
@@ -73,7 +73,7 @@ int main(void)
         PME_TEST_CHECK(pme_parse_self_mounts(t, sizeof(t) - 1u, &fs) == PME_OK, "eof");
         PME_TEST_CHECK(fs.n == 1u && strcmp(fs.mounts[0].fstype, "ext4") == 0, "eof val");
     }
-    /* empty */
+
     {
         struct pme_filesystem fs;
         PME_TEST_CHECK(pme_parse_self_mounts("", 0, &fs) == PME_EIO, "empty");

@@ -6,8 +6,7 @@
 #include "procfs.h"
 #include "readfd.h"
 
-/* /proc/self/mounts escapes special characters as \040 (space), \011 (tab),
- * \134 (backslash). Decode into a local buffer for statvfs. */
+/* /proc/self/mounts escapes space, tab and backslash as \040, \011, \134. */
 static void unescape_path(char *dst, size_t cap, const char *src, size_t n)
 {
     size_t o = 0;
@@ -52,12 +51,12 @@ int pme_collect_filesystem_section(int fd, struct pme_filesystem *out,
         struct statvfs st;
 
         if (skip && (cfg_flags & PME_CFG_FS_INCLUDE_REMOTE) == 0u) {
-            continue; /* reported with zero sizes, flagged */
+            continue;
         }
         unescape_path(path, sizeof(path), m->mountpoint,
                       strlen(m->mountpoint));
         if (statvfs(path, &st) != 0) {
-            m->flags |= PME_MOUNT_SKIPPED; /* no data available */
+            m->flags |= PME_MOUNT_SKIPPED;
             continue;
         }
         m->flags &= (uint32_t)~PME_MOUNT_SKIPPED;

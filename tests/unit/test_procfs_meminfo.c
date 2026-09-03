@@ -18,7 +18,7 @@ static void check_fixture(const char *path, const char *buf, size_t len, void *u
 
 int main(void)
 {
-    /* valid: all seven keys, kB -> bytes conversion */
+
     {
         static const char t[] =
             "MemTotal:        100 kB\n"
@@ -41,7 +41,7 @@ int main(void)
         PME_TEST_CHECK(m.swap_total == 30u * 1024u, "swap_total");
         PME_TEST_CHECK(m.swap_free == 5u * 1024u, "swap_free");
     }
-    /* old kernel without MemAvailable: key simply absent */
+
     {
         static const char t[] = "MemTotal: 100 kB\nMemFree: 50 kB\n";
         struct pme_memory m;
@@ -49,19 +49,19 @@ int main(void)
         PME_TEST_CHECK(pme_parse_meminfo(t, sizeof(t) - 1u, &m) == PME_OK, "old");
         PME_TEST_CHECK(m.total == 102400u && m.available == 0u, "old vals");
     }
-    /* malformed: key with no number */
+
     {
         static const char t[] = "MemTotal:\n";
         struct pme_memory m;
         PME_TEST_CHECK(pme_parse_meminfo(t, sizeof(t) - 1u, &m) == PME_EIO, "no value");
     }
-    /* malformed: non-numeric value */
+
     {
         static const char t[] = "MemTotal: abc kB\n";
         struct pme_memory m;
         PME_TEST_CHECK(pme_parse_meminfo(t, sizeof(t) - 1u, &m) == PME_EIO, "bad value");
     }
-    /* truncated line without newline */
+
     {
         static const char t[] = "MemTotal: 4";
         struct pme_memory m;

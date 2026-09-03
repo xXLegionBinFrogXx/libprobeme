@@ -19,7 +19,7 @@ static void check_fixture(const char *path, const char *buf, size_t len, void *u
 
 int main(void)
 {
-    /* valid: two header lines + two interfaces */
+
     {
         static const char t[] =
             "Inter-|   Receive                                                "
@@ -42,20 +42,20 @@ int main(void)
         PME_TEST_CHECK(nd.ifaces[1].rx_bytes == 1000u && nd.ifaces[1].tx_packets == 200u,
                        "eth0 counters");
     }
-    /* malformed: 11 counters only -> skipped */
+
     {
         static const char t[] = "  x0: 1 2 3 4 5 6 7 8 9 10 11\n";
         struct pme_netdev nd;
         PME_TEST_CHECK(pme_parse_net_dev(t, sizeof(t) - 1u, &nd) == PME_EIO, "short");
     }
-    /* malformed: name too long for the fixed field */
+
     {
         static const char t[] =
             "  abcdefghijklmnop0: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16\n";
         struct pme_netdev nd;
         PME_TEST_CHECK(pme_parse_net_dev(t, sizeof(t) - 1u, &nd) == PME_EIO, "longname");
     }
-    /* no data lines at all */
+
     {
         static const char t[] =
             "Inter-|   Receive |  Transmit\n"
@@ -63,7 +63,7 @@ int main(void)
         struct pme_netdev nd;
         PME_TEST_CHECK(pme_parse_net_dev(t, sizeof(t) - 1u, &nd) == PME_EIO, "headers");
     }
-    /* empty */
+
     {
         struct pme_netdev nd;
         PME_TEST_CHECK(pme_parse_net_dev("", 0, &nd) == PME_EIO, "empty");
